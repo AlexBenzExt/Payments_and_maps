@@ -1,6 +1,8 @@
 import {fireEvent, render} from '@testing-library/react-native';
 import Maps from '../src/components/Maps';
 import MapView from 'react-native-maps';
+import * as Permission from "react-native-permissions"
+
 
 jest.mock('react-native-maps', () => {
   const {View} = require('react-native');
@@ -33,6 +35,8 @@ jest.mock('react-native-permissions', () => {
   };
 });
 
+
+
 jest.mock('@react-native-community/geolocation', () => {
   const Geolocation = {
     getCurrentPosition: jest.fn().mockImplementation((callback: Function) => {
@@ -49,16 +53,15 @@ describe("ios map premissions",()=>{
     const button = getByTestId('AccessLocation');
     fireEvent.press(button);
   })
-  // it("denied permission",()=>{
-  //   const {getByTestId} = render(<Maps />);
-  //   const button = getByTestId('AccessLocation');
-  //   fireEvent.press(button);
-  // })
+  it("denied permission",()=>{
+    const {getByTestId} = render(<Maps />);
+    const button = getByTestId('AccessLocation');
+    fireEvent.press(button);
+  })
 
 })
 
 describe("adriod map premissions",()=>{
-
   it("granted permission",()=>{
     jest.mock('react-native/Libraries/Utilities/Platform', () => ({
       OS: 'android',
@@ -66,8 +69,25 @@ describe("adriod map premissions",()=>{
         openSettings: jest.fn(),
       },
     }));
+    const permock=jest.spyOn(Permission,'request')
+    permock.mockResolvedValue("denied")
     const {getByTestId} = render(<Maps />);
     const button = getByTestId('AccessLocation');
     fireEvent.press(button);
   })
+  it("granted permission",()=>{
+    jest.mock('react-native/Libraries/Utilities/Platform', () => ({
+      OS: 'android',
+      Linking: {
+        openSettings: jest.fn(),
+      },
+    }));
+    const permock=jest.spyOn(Permission,'request')
+    permock.mockResolvedValue("granted")
+    const {getByTestId} = render(<Maps />);
+    const button = getByTestId('AccessLocation');
+    fireEvent.press(button);
+  })
+  
+  
 })
